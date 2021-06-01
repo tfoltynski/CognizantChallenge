@@ -2,7 +2,9 @@ To run this project:
 1. Adjust connection string in appsettings.json
 2. Run command in solution: 
 dotnet ef database update
+3. Run the application
 
+################## Fibonacci #########################
 using System;  
   public class FibonacciExample  
    {  
@@ -23,6 +25,7 @@ using System;
    }  
 
 
+################## Average numbers #########################
 using System;
 using System.Linq;
 class Demo {
@@ -34,6 +37,7 @@ class Demo {
 }
 
 
+################## FizzBuzz #########################
 using System;
 class Demo {
    static void Main() {
@@ -59,6 +63,8 @@ class Demo {
    }
 }
 
+
+################## Prime numbers #########################
 using System;
 class Demo {
     static void Main(string[] args)
