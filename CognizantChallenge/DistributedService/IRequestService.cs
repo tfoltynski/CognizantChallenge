@@ -2,8 +2,8 @@
 using JetBrains.Annotations;
 
 namespace CognizantChallenge.DistributedService {
-    public interface ICompilerService<TO, in T> {
+    public interface IRequestService {
         [ItemCanBeNull]
-        Task<TO> Compile([NotNull] T input);
+        Task<T> Post<T>([NotNull] string url, [NotNull] object input);
     }
 }

@@ -1,26 +1,26 @@
 ﻿using System;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using CognizantChallenge.DistributedService.JDoodle.DTO;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 
 namespace CognizantChallenge.DistributedService.JDoodle {
-    public class JDoodleCompilerService : ICompilerService<JDoodleCompileOutput, JDoodleCompileInput> {
+    public class JDoodleService : IJDoodleService {
         [NotNull]
-        private readonly HttpClient httpClient;
-
+        private readonly IRequestService requestService;
+        
         [NotNull]
         private readonly string clientId;
 
         [NotNull]
         private readonly string clientSecret;
 
-        public JDoodleCompilerService([NotNull] HttpClient httpClient, [NotNull] IConfiguration configuration) {
-            this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        [NotNull]
+        private string url;
+
+        public JDoodleService([NotNull] IRequestService requestService, [NotNull] IConfiguration configuration) {
+            this.requestService = requestService ?? throw new ArgumentNullException(nameof(requestService));
+            url = configuration.GetValue<string>("JDoodleAPIConnection:ApiUrl");
             clientId = configuration.GetValue<string>("JDoodleAPIConnection:ClientId");
             clientSecret = configuration.GetValue<string>("JDoodleAPIConnection:ClientSecret");
         }
@@ -37,14 +37,8 @@ namespace CognizantChallenge.DistributedService.JDoodle {
                 LanguageVersionIndex = input.LanguageVersionIndex
             };
 
-            var inputContent = new StringContent(
-                JsonSerializer.Serialize(request, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase}),
-                Encoding.UTF8, "application/json");
-
-            using var response = await httpClient.PostAsync("/execute", inputContent);
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadFromJsonAsync<JDoodleCompileOutput>();
+            var response = await this.requestService.Post<JDoodleCompileOutput>($"{url}/execute", request);
+            return response;
         }
     }
 }

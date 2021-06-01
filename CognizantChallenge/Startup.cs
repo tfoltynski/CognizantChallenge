@@ -3,7 +3,6 @@ using CognizantChallenge.Application.Tasks.Services;
 using CognizantChallenge.Application.User.Services;
 using CognizantChallenge.DistributedService;
 using CognizantChallenge.DistributedService.JDoodle;
-using CognizantChallenge.DistributedService.JDoodle.DTO;
 using CognizantChallenge.Domain.Context;
 using CognizantChallenge.Domain.Repositories;
 using CognizantChallenge.Domain.Services;
@@ -29,9 +28,7 @@ namespace CognizantChallenge {
         public void ConfigureServices(IServiceCollection services) {
             services.AddControllersWithViews();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            services.AddHttpClient<ICompilerService<JDoodleCompileOutput, JDoodleCompileInput>, JDoodleCompilerService>(config => {
-                config.BaseAddress = new Uri("https://api.jdoodle.com/v1/");
-            });
+            services.AddHttpClient<IRequestService, RequestService>();
             services.AddDbContext<ITaskContext, TaskContext>(options => {
                 options.UseSqlServer(Configuration.GetConnectionString("CognizantChallengeContext"), sqlOptions => sqlOptions.EnableRetryOnFailure());
             });
@@ -41,6 +38,7 @@ namespace CognizantChallenge {
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<ITaskDomainService, TaskDomainService>();
+            services.AddScoped<IJDoodleService, JDoodleService>();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });

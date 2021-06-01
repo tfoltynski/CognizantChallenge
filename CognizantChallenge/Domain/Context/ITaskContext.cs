@@ -1,5 +1,4 @@
 ﻿using CognizantChallenge.Domain.Entities;
-using CognizantChallenge.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace CognizantChallenge.Domain.Context {

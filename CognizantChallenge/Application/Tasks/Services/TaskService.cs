@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CognizantChallenge.Application.Exceptions;
 using CognizantChallenge.Application.Tasks.DTO;
-using CognizantChallenge.DistributedService;
+using CognizantChallenge.DistributedService.JDoodle;
 using CognizantChallenge.DistributedService.JDoodle.DTO;
 using CognizantChallenge.Domain.Entities;
 using CognizantChallenge.Domain.Repositories;
@@ -14,9 +14,6 @@ using JetBrains.Annotations;
 
 namespace CognizantChallenge.Application.Tasks.Services {
     public class TaskService : ITaskService {
-        [NotNull]
-        private readonly IUserRepository userRepository;
-
         [NotNull]
         private readonly ITaskRepository taskRepository;
 
@@ -27,16 +24,14 @@ namespace CognizantChallenge.Application.Tasks.Services {
         private readonly ITaskDomainService taskDomainService;
 
         [NotNull]
-        private readonly ICompilerService<JDoodleCompileOutput, JDoodleCompileInput> compilerService;
+        private readonly IJDoodleService jDoodleService;
 
-        public TaskService([NotNull] IUserRepository userRepository, [NotNull] ITaskRepository taskRepository, [NotNull] IMapper mapper,
-            [NotNull] ITaskDomainService taskDomainService,
-            [NotNull] ICompilerService<JDoodleCompileOutput, JDoodleCompileInput> compilerService) {
-            this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        public TaskService([NotNull] ITaskRepository taskRepository, [NotNull] IMapper mapper, [NotNull] ITaskDomainService taskDomainService,
+            [NotNull] IJDoodleService jDoodleService) {
             this.taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             this.taskDomainService = taskDomainService ?? throw new ArgumentNullException(nameof(taskDomainService));
-            this.compilerService = compilerService ?? throw new ArgumentNullException(nameof(compilerService));
+            this.jDoodleService = jDoodleService ?? throw new ArgumentNullException(nameof(jDoodleService));
         }
 
         public async Task<GetTaskOutput> GetTask(GetTaskInput input) {
@@ -58,17 +53,17 @@ namespace CognizantChallenge.Application.Tasks.Services {
             var compilerInputDto = new JDoodleCompileInput {
                 Input = task.Input,
                 Code = input.Code,
-                Language = "csharp",
+                Language = input.Language,
                 LanguageVersionIndex = "0"
             };
-            var compileResult = await compilerService.Compile(compilerInputDto);
+            var compileResult = await jDoodleService.Compile(compilerInputDto);
             if (compileResult == null) return new SubmitTaskOutput {IsCorrect = false, Output = "Compiler failed to complete operation."};
 
             if ((HttpStatusCode) compileResult.StatusCode == HttpStatusCode.OK) {
                 var wasAdded = await taskDomainService.TryAddToSolvedTasks(task, input.UserName, compileResult.Output);
                 if (!wasAdded) return new SubmitTaskOutput {IsCorrect = false, Output = compileResult.Output, Expected = task.Output};
             } else
-                return new SubmitTaskOutput {IsCorrect = false, Output = compileResult.Output};
+                return new SubmitTaskOutput {IsCorrect = false, Output = compileResult.Output, Expected = task.Output};
 
             return new SubmitTaskOutput {IsCorrect = true};
         }

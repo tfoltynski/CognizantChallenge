@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
 namespace CognizantChallenge.DistributedService.JDoodle.DTO {
-    public sealed class JDoodleCompileRequest {
+    internal sealed class JDoodleCompileRequest {
         public string ClientId { get; set; }
 
         public string ClientSecret { get; set; }

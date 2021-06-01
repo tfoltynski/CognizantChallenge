@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CognizantChallenge.Domain.Entities;
-using CognizantChallenge.Infrastructure;
 
 namespace CognizantChallenge.Domain.Repositories {
     public interface IUserRepository {
